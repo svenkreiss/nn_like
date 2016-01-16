@@ -32,6 +32,7 @@ void nn_like(int _n_layers, int* _layer_units) {
     for (int n=0; n < n_layers; n++) {
         states[n] = (double*)malloc(layer_units[n] * sizeof(double));
         deltas[n] = (double*)malloc(layer_units[n] * sizeof(double));
+        for (int i=0; i < layer_units[n]; i++) deltas[n][i] = 0.0;
     }
     for (int n=0; n < n_layers-1; n++) {
         weights[n] = (double**)malloc(layer_units[n] * sizeof(double*));
@@ -40,7 +41,7 @@ void nn_like(int _n_layers, int* _layer_units) {
             weights[n][r] = (double*)malloc(layer_units[n+1] * sizeof(double));
             vars[n][r] = (double*)malloc(layer_units[n+1] * sizeof(double));
             for (int c=0; c < layer_units[n+1]; c++) {
-                weights[n][r][c] = 0.5;
+                weights[n][r][c] = -0.4 + 0.8*((double)rand()/RAND_MAX);
                 vars[n][r][c] = 1.0;
             }
         }
@@ -60,17 +61,50 @@ double logistic_function(double i) {
     return 1.0 / (1.0 + exp(-i));
 }
 
-double logistic_function_prime(double i) {
-    return logistic_function(i)*(1.0 - logistic_function(i));
+double logistic_function_prime(double o) {
+    return o * (1.0-o);
 }
 
 double logistic_function_inverse(double i) {
+    if (i > 0.999) return 10.0;
+    if (i < 0.001) return -10.0;
     return -log((1.0-i) / i);
 }
 
-double (*f)(double) = &logistic_function;  // activation function
-double (*f_inv)(double) = &logistic_function_inverse;  // inverse
-double (*f_prime)(double) = &logistic_function_prime;  // derivative
+double logistic_function_backprop(double t, double o) {
+    // printf("%f -> %f, %f -> %f\n", t, logistic_function_inverse(t), o, logistic_function_inverse(o));
+    double delta = logistic_function_inverse(t) - logistic_function_inverse(o);
+    // for numerical stability, constrain delta
+    if (delta > 10.0) delta = 10.0;
+    if (delta < -10.0) delta = -10.0;
+    return delta;
+}
+
+// double tanh(double i); // already in math library
+double tanh_prime(double o) {
+    return 1 - o*o;
+}
+double tanh_inverse(double i) {
+    return atanh(i);
+}
+double tanh_backprop(double t, double o) {
+    if (t >= 0.999) t = 0.999;
+    if (t < -0.999) t = -0.999;
+    if (o > 0.999) o = 0.999;
+    if (o < -0.999) o = -0.999;
+    // printf("%f -> %f, %f -> %f\n", t, tanh_inverse(t), o, tanh_inverse(o));
+    double delta = tanh_inverse(t) - tanh_inverse(o);
+    // for numerical stability, constrain delta
+    if (delta > 10.0) delta = 10.0;
+    if (delta < -10.0) delta = -10.0;
+    return delta;
+}
+
+
+double (*f)(double) = &tanh;  // activation function
+double (*f_inv)(double) = &tanh_inverse;  // inverse
+double (*f_prime)(double) = &tanh_prime;  // derivative
+double (*f_backprop)(double, double) = &tanh_backprop; // backprop
 
 
 void forward_deterministic(double* input, double* output) {
@@ -148,7 +182,7 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
     for (int l=0; l <= n_layers-2; l++) {
         for (int i=0; i < layer_units[l]; i++) {
             for (int o=0; o < layer_units[l+1]; o++) {
-                weights[l][i][o] += eta * deltas[l+1][o] * states[l+1][o];
+                weights[l][i][o] += eta * deltas[l+1][o] * states[l][i];
             }
         }
     }
@@ -162,7 +196,7 @@ int output_size(void) {
 void print_states(void) {
     for (int n=0; n < n_layers; n++) {
         for (int u=0; u < layer_units[n]; u++) {
-            printf("%.2f ", states[n][u]);
+            printf("%.2f(%.4f) ", states[n][u], deltas[n][u]);
         }
         printf("\n");
     }
