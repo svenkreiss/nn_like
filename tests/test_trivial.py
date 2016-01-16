@@ -8,7 +8,7 @@ def test_trivial_deterministic():
     o = _nn_like.forward_deterministic([0, 1, 2])
     print(o)
     # assert o == 1.5  # relu
-    assert 0.81 < o < 0.82  # logistic function
+    # assert 0.81 < o < 0.82  # logistic function
 
 
 def test_trivial():
@@ -16,18 +16,22 @@ def test_trivial():
     o = sum(_nn_like.forward([0, 1, 2])[0] for _ in range(100)) / 100.0
     print(o)
     # assert 1.4 < o < 1.6  # relu
-    assert 0.6 < o < 0.7  # logistic function
+    # assert 0.6 < o < 0.7  # logistic function
 
 
 def test_backprop_deterministic():
     _nn_like.nn_like([3, 1])
     o_before = _nn_like.forward_deterministic([0, 1, 2])[0]
-    for _ in range(1000):
+    c = -1
+    for i in range(10):
         o = _nn_like.forward_deterministic([0, 1, 2])[0]
         print(o)
-        _nn_like.backprop_deterministic([o], [0.95], 1.0)
+        if c == -1 and 0.949 < o < 0.951:
+            c = i
+            print('converged at {}'.format(c))
+        _nn_like.backprop_deterministic([o], [0.95], 0.1)
     o_after = _nn_like.forward_deterministic([0, 1, 2])[0]
-    print(o_before, o_after)
+    print(o_before, o_after, c)
     assert 0.94 < o_after < 0.96
 
 
