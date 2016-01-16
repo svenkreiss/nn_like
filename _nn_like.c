@@ -65,7 +65,7 @@ static PyObject *nn_like_nn_like(PyObject *self, PyObject *args) {
     // C call
     nn_like(n_layers, layer_units);
 
-    Py_DECREF(layer_units);
+    // Py_DECREF(layer_units);
     PyObject *ret = Py_BuildValue("d", 0.0);
     return ret;
 }
@@ -95,7 +95,7 @@ static PyObject *nn_like_forward_deterministic(PyObject *self, PyObject *args) {
     // C call
     forward_deterministic(inputs, outputs);
 
-    Py_DECREF(inputs);
+    // Py_DECREF(inputs);
     PyObject *ret = Py_BuildValue("O", output_array);
     return ret;
 }
@@ -125,7 +125,7 @@ static PyObject *nn_like_forward(PyObject *self, PyObject *args) {
     // C call
     forward(inputs, outputs);
 
-    Py_DECREF(inputs);
+    // Py_DECREF(inputs);
     PyObject *ret = Py_BuildValue("O", output_array);
     return ret;
 }
@@ -155,8 +155,8 @@ static PyObject *nn_like_backprop_deterministic(PyObject *self, PyObject *args) 
     // C call
     backprop_deterministic(outputs, targets, eta);
 
-    Py_DECREF(outputs);
-    Py_DECREF(targets);
+    // Py_DECREF(outputs);
+    // Py_DECREF(targets);
     PyObject *ret = Py_BuildValue("O", output_array);
     return ret;
 }
