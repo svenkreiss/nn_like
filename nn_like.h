@@ -1,3 +1,4 @@
+void bias(int v);
 void nn_like(int _layers, int* _layer_units);
 
 void random_weights(void);

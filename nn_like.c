@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int include_bias = 1;
 int n_layers;
 int* layer_units;
 double** states;
@@ -12,6 +13,11 @@ double* states2_sum;
 double** deltas;
 double*** weights;
 double*** vars;
+
+
+void bias(int v) {
+    include_bias = v;
+}
 
 
 void nn_like(int _n_layers, int* _layer_units) {

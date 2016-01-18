@@ -5,6 +5,7 @@
 #include "nn_like.h"
 
 
+static PyObject *nn_like_bias(PyObject *self, PyObject *args);
 static PyObject *nn_like_nn_like(PyObject *self, PyObject *args);
 static PyObject *nn_like_random_weights(PyObject *self, PyObject *args);
 static PyObject *nn_like_fixed_weights(PyObject *self, PyObject *args);
@@ -15,6 +16,7 @@ static PyObject *nn_like_print_states(PyObject *self, PyObject *args);
 static PyObject *nn_like_print_connections(PyObject *self, PyObject *args);
 
 static PyMethodDef module_methods[] = {
+    {"bias", nn_like_bias, METH_VARARGS, "bias"},
     {"nn_like", nn_like_nn_like, METH_VARARGS, "Creates a NN."},
     {"random_weights", nn_like_random_weights, METH_VARARGS, "Random weights."},
     {"fixed_weights", nn_like_fixed_weights, METH_VARARGS, "fixed weights."},
@@ -44,6 +46,20 @@ PyMODINIT_FUNC PyInit__nn_like(void) {
 
     import_array();
     return m;
+}
+
+static PyObject *nn_like_bias(PyObject *self, PyObject *args) {
+    int value;
+
+    // parse input tuple
+    if (!PyArg_ParseTuple(args, "i", &value))
+        return NULL;
+
+    // C call
+    bias(value);
+
+    PyObject *ret = Py_BuildValue("d", 0.0);
+    return ret;
 }
 
 static PyObject *nn_like_nn_like(PyObject *self, PyObject *args) {

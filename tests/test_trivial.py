@@ -5,6 +5,7 @@ import _nn_like
 
 def test_backprop_11():
     print('\n=== test_backprop_11 ===')
+    _nn_like.bias(0)
     _nn_like.nn_like([1, 1])
     _nn_like.fixed_weights(1.2, 1.0)
     o_before = _nn_like.forward_deterministic([1])[0]
@@ -16,6 +17,7 @@ def test_backprop_11():
 
 def test_backprop_11_nonunit():
     print('\n=== test_backprop_11_nonunit ===')
+    _nn_like.bias(0)
     _nn_like.nn_like([1, 1])
     _nn_like.fixed_weights(1.2, 1.0)
     o_before = _nn_like.forward_deterministic([2])[0]
@@ -27,6 +29,7 @@ def test_backprop_11_nonunit():
 
 def test_backprop_111():
     print('\n=== test_backprop_111 ===')
+    _nn_like.bias(0)
     _nn_like.nn_like([1, 1, 1])
     _nn_like.fixed_weights(1.2, 1.0)
     o_before = _nn_like.forward_deterministic([1])[0]
@@ -38,6 +41,7 @@ def test_backprop_111():
 
 def test_backprop_111_nonunit():
     print('\n=== test_backprop_111_nonunit ===')
+    _nn_like.bias(0)
     _nn_like.nn_like([1, 1, 1])
     _nn_like.fixed_weights(1.2, 1.0)
     o_before = _nn_like.forward_deterministic([2])[0]
@@ -49,6 +53,7 @@ def test_backprop_111_nonunit():
 
 def test_backprop_121():
     print('\n=== test_backprop_121 ===')
+    _nn_like.bias(0)
     _nn_like.nn_like([1, 2, 1])
     _nn_like.fixed_weights(1.2, 1.0)
     o_before = _nn_like.forward_deterministic([1])[0]
@@ -60,6 +65,7 @@ def test_backprop_121():
 
 def test_backprop_1221():
     print('\n=== test_backprop_1221 ===')
+    _nn_like.bias(0)
     _nn_like.nn_like([1, 2, 2, 1])
     _nn_like.fixed_weights(0.5, 1.0)
     o_before = _nn_like.forward_deterministic([1])[0]
