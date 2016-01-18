@@ -63,6 +63,7 @@ void random_weights(void) {
     }
 }
 
+
 void fixed_weights(double weight, double variance) {
     for (int l=0; l < n_layers-1; l++) {
         for (int r=0; r < (layer_units[l]+1); r++) {
