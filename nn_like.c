@@ -43,9 +43,9 @@ void nn_like(int _n_layers, int* _layer_units) {
     for (int l=0; l < n_layers-1; l++) {
         weights[l] = (double**)malloc((layer_units[l]+1) * sizeof(double*));
         vars[l] = (double**)malloc((layer_units[l]+1) * sizeof(double*));
-        for (int r=0; r < (layer_units[l]+1); r++) {
-            weights[l][r] = (double*)malloc(layer_units[l+1] * sizeof(double));
-            vars[l][r] = (double*)malloc(layer_units[l+1] * sizeof(double));
+        for (int i=0; i < (layer_units[l]+1); i++) {
+            weights[l][i] = (double*)malloc(layer_units[l+1] * sizeof(double));
+            vars[l][i] = (double*)malloc(layer_units[l+1] * sizeof(double));
         }
     }
     random_weights();
@@ -54,10 +54,10 @@ void nn_like(int _n_layers, int* _layer_units) {
 
 void random_weights(void) {
     for (int l=0; l < n_layers-1; l++) {
-        for (int r=0; r < (layer_units[l]+1); r++) {
-            for (int c=0; c < layer_units[l+1]; c++) {
-                weights[l][r][c] = -0.4 + 0.8*((double)rand()/RAND_MAX);
-                vars[l][r][c] = 1.0;
+        for (int i=0; i < (layer_units[l]+1); i++) {
+            for (int o=0; o < layer_units[l+1]; o++) {
+                weights[l][i][o] = -0.4 + 0.8*((double)rand()/RAND_MAX);
+                vars[l][i][o] = 1.0;
             }
         }
     }
@@ -66,10 +66,10 @@ void random_weights(void) {
 
 void fixed_weights(double weight, double variance) {
     for (int l=0; l < n_layers-1; l++) {
-        for (int r=0; r < (layer_units[l]+1); r++) {
-            for (int c=0; c < layer_units[l+1]; c++) {
-                weights[l][r][c] = weight;
-                vars[l][r][c] = variance;
+        for (int i=0; i < (layer_units[l]+1); i++) {
+            for (int o=0; o < layer_units[l+1]; o++) {
+                weights[l][i][o] = weight;
+                vars[l][i][o] = variance;
             }
         }
     }
@@ -301,8 +301,8 @@ int output_size(void) {
 void print_states(void) {
     for (int l=0; l < n_layers; l++) {
         printf("States(deltas) layer %i: ", l);
-        for (int u=0; u < layer_units[l]; u++) {
-            printf("%.2f(%.4f) ", states[l][u], deltas[l][u]);
+        for (int i=0; i < layer_units[l]; i++) {
+            printf("%.2f(%.4f) ", states[l][i], deltas[l][i]);
         }
         printf("\n");
     }
@@ -312,9 +312,9 @@ void print_states(void) {
 void print_connections(void) {
     for (int l=0; l < n_layers-1; l++) {
         printf("Weights layer %i:\n", l);
-        for (int ui=0; ui < layer_units[l]; ui++) {
-            for (int uo=0; uo < layer_units[l+1]; uo++) {
-                printf("%.2f+/-%.2f ", weights[l][ui][uo], sqrt(vars[l][ui][uo]));
+        for (int i=0; i < layer_units[l]; i++) {
+            for (int o=0; o < layer_units[l+1]; o++) {
+                printf("%.2f+/-%.2f ", weights[l][i][o], sqrt(vars[l][i][o]));
             }
             printf("\n");
         }
