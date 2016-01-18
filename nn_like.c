@@ -195,13 +195,12 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
     for (int i=0; i < layer_units[n_layers-1]; i++) {
         deltas[n_layers-1][i] = (target_output[i] - states[n_layers-1][i]);
 
-        // multiply by f'(net)
-        double net = (*f_inv)(states[n_layers-1][i]);
-        deltas[n_layers-1][i] *= (*f_prime)(net);
+        // multiply by f'(net) [standard way]
+        deltas[n_layers-1][i] *= (*f_prime)(states[n_layers-1][i]);
     }
 
     // backpropagate hidden deltas
-    for (int l=n_layers-2; l >= 0; l--) {
+    for (int l=n_layers-2; l > 0; l--) {
         for (int i=0; i < layer_units[l]; i++) {
             deltas[l][i] = 0.0;
             for (int o=0; o < layer_units[l+1]; o++) {
@@ -209,8 +208,7 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
             }
 
             // multiply by f'(net)
-            double net = (*f_inv)(states[l+1][i]);
-            deltas[l][i] *= (*f_prime)(net);
+            deltas[l][i] *= (*f_prime)(states[l][i]);
         }
     }
 
