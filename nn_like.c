@@ -82,17 +82,14 @@ double relu(double i) {
 double logistic_function(double i) {
     return 1.0 / (1.0 + exp(-i));
 }
-
 double logistic_function_prime(double o) {
     return o * (1.0-o);
 }
-
 double logistic_function_inverse(double i) {
     if (i > 0.999) return 10.0;
     if (i < 0.001) return -10.0;
     return -log((1.0-i) / i);
 }
-
 double logistic_function_backprop(double t, double o) {
     // printf("%f -> %f, %f -> %f\n", t, logistic_function_inverse(t), o, logistic_function_inverse(o));
     double delta = logistic_function_inverse(t) - logistic_function_inverse(o);
@@ -158,6 +155,7 @@ void forward_deterministic(double* input, double* output) {
     memcpy(output, states[n_layers-1], sizeof(double)*layer_units[n_layers-1]);
 }
 
+
 void forward(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
@@ -192,7 +190,8 @@ void forward(double* input, double* output) {
     memcpy(output, states[n_layers-1], sizeof(double)*layer_units[n_layers-1]);
 }
 
-void backprop_deterministic(double* output, double* target_output, double eta) {
+
+void backprop_deterministic_traditional(double* output, double* target_output, double eta) {
     /*
      * eta is the learning rate.
      */
@@ -227,6 +226,67 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
         }
     }
 }
+
+
+void backprop_deterministic(double* output, double* target_output, double eta) {
+    /*
+     * eta is the learning rate.
+     */
+
+    // init output deltas
+    for (int i=0; i < layer_units[n_layers-1]; i++) {
+        deltas[n_layers-1][i] = (target_output[i] - states[n_layers-1][i]);
+
+        // [non-traditional] use exact expression to compute how delta
+        // propagates through the activation function
+        deltas[n_layers-1][i] = (*f_backprop)(
+            states[n_layers-1][i] + deltas[n_layers-1][i],
+            states[n_layers-1][i]
+        );
+    }
+
+    // backpropagate hidden deltas
+    for (int l=n_layers-2; l > 0; l--) {
+        for (int i=0; i < layer_units[l]; i++) {
+            deltas[l][i] = 0.0;
+            for (int o=0; o < layer_units[l+1]; o++) {
+                double w2_sum = 0.0;
+                for (int ii=0; ii < layer_units[l]; ii++) {
+                    w2_sum += weights[l][ii][o]*weights[l][ii][o];
+                }
+
+                // if (w2_sum == 0.0) continue;
+                // if (weights[l][i][o]/w2_sum > 1000.0) continue;
+
+                // [non-traditional] backprop deltas weighted by the
+                // normalized weight squared.
+                // The weight is normalized with respect to all the input
+                // units connecting to this particular output.
+                deltas[l][i] += deltas[l+1][o] * weights[l][i][o] / w2_sum;
+            }
+
+            deltas[l][i] = (*f_backprop)(
+                states[l][i] + deltas[l][i],
+                states[l][i]
+            );
+        }
+    }
+
+    // update weights
+    // for (int l=0; l <= n_layers-2; l++) {
+    int l = rand() % (n_layers-1);
+    // printf("update layer %i\n", l);
+        // [non-traditional] weight update proportional to the square of
+        // the input state.
+
+        for (int i=0; i < layer_units[l]; i++) {
+            for (int o=0; o < layer_units[l+1]; o++) {
+                weights[l][i][o] += eta * deltas[l+1][o] * states[l][i] / states2_sum[l];
+            }
+        }
+    // }
+}
+
 
 int output_size(void) {
     return layer_units[n_layers-1];
