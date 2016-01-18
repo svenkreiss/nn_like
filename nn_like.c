@@ -143,7 +143,7 @@ void forward_deterministic(double* input, double* output) {
     for (int l=0; l < n_layers-1; l++) {
         for (int o=0; o < layer_units[l+1]; o++) {
             states[l+1][o] = 0.0;
-            for (int i=0; i < layer_units[l]; i++) {
+            for (int i=0; i < layer_units[l]+include_bias; i++) {
                 states[l+1][o] += states[l][i] * weights[l][i][o];
             }
             states[l+1][o] = (*f)(states[l+1][o]);
@@ -163,7 +163,7 @@ void forward(double* input, double* output) {
     for (int l=0; l < n_layers-1; l++) {
         for (int o=0; o < layer_units[l+1]; o++) {
             states[l+1][o] = 0.0;
-            for (int i=0; i < layer_units[l]; i++) {
+            for (int i=0; i < layer_units[l]+include_bias; i++) {
                 // Box-Muller for Gauss rand number
                 double U = (double)rand() / RAND_MAX;
                 double V = (double)rand() / RAND_MAX;
@@ -208,7 +208,7 @@ void backprop_deterministic_traditional(double* output, double* target_output, d
 
     // update weights
     for (int l=0; l <= n_layers-2; l++) {
-        for (int i=0; i < layer_units[l]; i++) {
+        for (int i=0; i < layer_units[l]+include_bias; i++) {
             for (int o=0; o < layer_units[l+1]; o++) {
                 weights[l][i][o] += eta * deltas[l+1][o] * states[l][i];
             }
@@ -268,11 +268,11 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
         // [non-traditional] weight update proportional to the square of
         // the input state.
         double s2_sum = 0.0;
-        for (int i=0; i < layer_units[l]; i++) {
+        for (int i=0; i < layer_units[l]+include_bias; i++) {
             s2_sum += states[l][i]*states[l][i];
         }
 
-        for (int i=0; i < layer_units[l]; i++) {
+        for (int i=0; i < layer_units[l]+include_bias; i++) {
             for (int o=0; o < layer_units[l+1]; o++) {
                 weights[l][i][o] += eta * deltas[l+1][o] * states[l][i] / s2_sum;
             }
