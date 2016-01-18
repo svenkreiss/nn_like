@@ -82,6 +82,7 @@ double relu(double i) {
 double logistic_function(double i) {
     return 1.0 / (1.0 + exp(-i));
 }
+
 double logistic_function_prime(double o) {
     return o * (1.0-o);
 }
@@ -131,7 +132,7 @@ void forward_deterministic(double* input, double* output) {
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
     states2_sum[0] = 0.0;
     for (int ui=0; ui < layer_units[0]; ui++) {
-        states2_sum[0] += states[0][ui];
+        states2_sum[0] += states[0][ui]*states[0][ui];
     }
 
     // process layers
@@ -161,7 +162,7 @@ void forward(double* input, double* output) {
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
     states2_sum[0] = 0.0;
     for (int ui=0; ui < layer_units[0]; ui++) {
-        states2_sum[0] += states[0][ui];
+        states2_sum[0] += states[0][ui]*states[0][ui];
     }
 
     // process layers
