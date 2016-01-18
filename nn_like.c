@@ -135,24 +135,24 @@ void forward_deterministic(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
     states2_sum[0] = 0.0;
-    for (int ui=0; ui < layer_units[0]; ui++) {
-        states2_sum[0] += states[0][ui]*states[0][ui];
+    for (int i=0; i < layer_units[0]; i++) {
+        states2_sum[0] += states[0][i]*states[0][i];
     }
 
     // process layers
     for (int l=0; l < n_layers-1; l++) {
-        for (int uo=0; uo < layer_units[l+1]; uo++) {
-            states[l+1][uo] = 0.0;
-            for (int ui=0; ui < layer_units[l]; ui++) {
-                states[l+1][uo] += states[l][ui] * weights[l][ui][uo];
+        for (int o=0; o < layer_units[l+1]; o++) {
+            states[l+1][o] = 0.0;
+            for (int i=0; i < layer_units[l]; i++) {
+                states[l+1][o] += states[l][i] * weights[l][i][o];
             }
-            states[l+1][uo] = (*f)(states[l+1][uo]);
+            states[l+1][o] = (*f)(states[l+1][o]);
         }
 
         // update sum of states squared
         states2_sum[l+1] = 0.0;
-        for (int uo=0; uo < layer_units[l+1]; uo++) {
-            states2_sum[l+1] += states[l+1][uo]*states[l+1][uo];
+        for (int o=0; o < layer_units[l+1]; o++) {
+            states2_sum[l+1] += states[l+1][o]*states[l+1][o];
         }
     }
 
@@ -165,29 +165,29 @@ void forward(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
     states2_sum[0] = 0.0;
-    for (int ui=0; ui < layer_units[0]; ui++) {
-        states2_sum[0] += states[0][ui]*states[0][ui];
+    for (int i=0; i < layer_units[0]; i++) {
+        states2_sum[0] += states[0][i]*states[0][i];
     }
 
     // process layers
     for (int l=0; l < n_layers-1; l++) {
-        for (int uo=0; uo < layer_units[l+1]; uo++) {
-            states[l+1][uo] = 0.0;
-            for (int ui=0; ui < layer_units[l]; ui++) {
+        for (int o=0; o < layer_units[l+1]; o++) {
+            states[l+1][o] = 0.0;
+            for (int i=0; i < layer_units[l]; i++) {
                 // Box-Muller for Gauss rand number
                 double U = (double)rand() / RAND_MAX;
                 double V = (double)rand() / RAND_MAX;
                 double r = sqrt(-2.0 * log(U)) * cos(2.0*M_PI*V);
-                double w_obs = sqrt(vars[l][ui][uo])*r + weights[l][ui][uo];
-                states[l+1][uo] += states[l][ui] * w_obs;
+                double w_obs = sqrt(vars[l][i][o])*r + weights[l][i][o];
+                states[l+1][o] += states[l][i] * w_obs;
             }
-            states[l+1][uo] = (*f)(states[l+1][uo]);
+            states[l+1][o] = (*f)(states[l+1][o]);
         }
 
         // update sum of states squared
         states2_sum[l+1] = 0.0;
-        for (int uo=0; uo < layer_units[l+1]; uo++) {
-            states2_sum[l+1] += states[l+1][uo]*states[l+1][uo];
+        for (int o=0; o < layer_units[l+1]; o++) {
+            states2_sum[l+1] += states[l+1][o]*states[l+1][o];
         }
     }
 
