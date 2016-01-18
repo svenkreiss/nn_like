@@ -8,6 +8,7 @@
 int n_layers;
 int* layer_units;
 double** states;
+double* states2_sum;
 double** deltas;
 double*** weights;
 double*** vars;
@@ -20,29 +21,50 @@ void nn_like(int _n_layers, int* _layer_units) {
     // reserve memory
     layer_units = (int*)malloc(n_layers * sizeof(int));
     states = (double**)malloc(n_layers * sizeof(double*));
+    states2_sum = (double*)malloc(n_layers * sizeof(double));
     deltas = (double**)malloc(n_layers * sizeof(double*));
     weights = (double***)malloc((n_layers-1) * sizeof(double**));
     vars = (double***)malloc((n_layers-1) * sizeof(double**));
 
     // initialize
-    for (int n=0; n < n_layers; n++) {
-        layer_units[n] = _layer_units[n];
-        printf("Layer units[%d] = %d\n", n, layer_units[n]);
+    for (int l=0; l < n_layers; l++) {
+        layer_units[l] = _layer_units[l];
+        printf("Layer units[%d] = %d\n", l, layer_units[l]);
     }
-    for (int n=0; n < n_layers; n++) {
-        states[n] = (double*)malloc(layer_units[n] * sizeof(double));
-        deltas[n] = (double*)malloc(layer_units[n] * sizeof(double));
-        for (int i=0; i < layer_units[n]; i++) deltas[n][i] = 0.0;
+    for (int l=0; l < n_layers; l++) {
+        states[l] = (double*)malloc((layer_units[l]+1) * sizeof(double));
+        deltas[l] = (double*)malloc(layer_units[l] * sizeof(double));
+        for (int i=0; i < layer_units[l]; i++) deltas[l][i] = 0.0;
     }
-    for (int n=0; n < n_layers-1; n++) {
-        weights[n] = (double**)malloc(layer_units[n] * sizeof(double*));
-        vars[n] = (double**)malloc(layer_units[n] * sizeof(double*));
-        for (int r=0; r < layer_units[n]; r++) {
-            weights[n][r] = (double*)malloc(layer_units[n+1] * sizeof(double));
-            vars[n][r] = (double*)malloc(layer_units[n+1] * sizeof(double));
-            for (int c=0; c < layer_units[n+1]; c++) {
-                weights[n][r][c] = -0.4 + 0.8*((double)rand()/RAND_MAX);
-                vars[n][r][c] = 1.0;
+    for (int l=0; l < n_layers-1; l++) {
+        weights[l] = (double**)malloc(layer_units[l] * sizeof(double*));
+        vars[l] = (double**)malloc(layer_units[l] * sizeof(double*));
+        for (int r=0; r < layer_units[l]; r++) {
+            weights[l][r] = (double*)malloc(layer_units[l+1] * sizeof(double));
+            vars[l][r] = (double*)malloc(layer_units[l+1] * sizeof(double));
+        }
+    }
+    random_weights();
+}
+
+
+void random_weights(void) {
+    for (int l=0; l < n_layers-1; l++) {
+        for (int r=0; r < layer_units[l]; r++) {
+            for (int c=0; c < layer_units[l+1]; c++) {
+                weights[l][r][c] = -0.4 + 0.8*((double)rand()/RAND_MAX);
+                vars[l][r][c] = 1.0;
+            }
+        }
+    }
+}
+
+void fixed_weights(double weight, double variance) {
+    for (int l=0; l < n_layers-1; l++) {
+        for (int r=0; r < layer_units[l]; r++) {
+            for (int c=0; c < layer_units[l+1]; c++) {
+                weights[l][r][c] = weight;
+                vars[l][r][c] = variance;
             }
         }
     }
@@ -110,6 +132,10 @@ double (*f_backprop)(double, double) = &tanh_backprop; // backprop
 void forward_deterministic(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
+    states2_sum[0] = 0.0;
+    for (int ui=0; ui < layer_units[0]; ui++) {
+        states2_sum[0] += states[0][ui];
+    }
 
     // process layers
     for (int l=0; l < n_layers-1; l++) {
@@ -120,6 +146,12 @@ void forward_deterministic(double* input, double* output) {
             }
             states[l+1][uo] = (*f)(states[l+1][uo]);
         }
+
+        // update sum of states squared
+        states2_sum[l+1] = 0.0;
+        for (int uo=0; uo < layer_units[l+1]; uo++) {
+            states2_sum[l+1] += states[l+1][uo]*states[l+1][uo];
+        }
     }
 
     // return output
@@ -129,6 +161,10 @@ void forward_deterministic(double* input, double* output) {
 void forward(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
+    states2_sum[0] = 0.0;
+    for (int ui=0; ui < layer_units[0]; ui++) {
+        states2_sum[0] += states[0][ui];
+    }
 
     // process layers
     for (int l=0; l < n_layers-1; l++) {

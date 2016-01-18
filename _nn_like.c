@@ -6,6 +6,8 @@
 
 
 static PyObject *nn_like_nn_like(PyObject *self, PyObject *args);
+static PyObject *nn_like_random_weights(PyObject *self, PyObject *args);
+static PyObject *nn_like_fixed_weights(PyObject *self, PyObject *args);
 static PyObject *nn_like_forward_deterministic(PyObject *self, PyObject *args);
 static PyObject *nn_like_forward(PyObject *self, PyObject *args);
 static PyObject *nn_like_backprop_deterministic(PyObject *self, PyObject *args);
@@ -14,6 +16,8 @@ static PyObject *nn_like_print_connections(PyObject *self, PyObject *args);
 
 static PyMethodDef module_methods[] = {
     {"nn_like", nn_like_nn_like, METH_VARARGS, "Creates a NN."},
+    {"random_weights", nn_like_random_weights, METH_VARARGS, "Random weights."},
+    {"fixed_weights", nn_like_fixed_weights, METH_VARARGS, "fixed weights."},
     {"forward_deterministic", nn_like_forward_deterministic, METH_VARARGS, "Applies the NN."},
     {"forward", nn_like_forward, METH_VARARGS, "Applies the NN."},
     {"backprop_deterministic", nn_like_backprop_deterministic, METH_VARARGS, "Backprop deterministic."},
@@ -66,6 +70,28 @@ static PyObject *nn_like_nn_like(PyObject *self, PyObject *args) {
     nn_like(n_layers, layer_units);
 
     // Py_DECREF(layer_units);
+    PyObject *ret = Py_BuildValue("d", 0.0);
+    return ret;
+}
+
+static PyObject *nn_like_random_weights(PyObject *self, PyObject *args) {
+    // C call
+    random_weights();
+
+    PyObject *ret = Py_BuildValue("d", 0.0);
+    return ret;
+}
+
+static PyObject *nn_like_fixed_weights(PyObject *self, PyObject *args) {
+    double weight, variance;
+
+    // parse input tuple
+    if (!PyArg_ParseTuple(args, "dd", &weight, &variance))
+        return NULL;
+
+    // C call
+    fixed_weights(weight, variance);
+
     PyObject *ret = Py_BuildValue("d", 0.0);
     return ret;
 }
@@ -157,7 +183,7 @@ static PyObject *nn_like_backprop_deterministic(PyObject *self, PyObject *args) 
 
     // Py_DECREF(outputs);
     // Py_DECREF(targets);
-    PyObject *ret = Py_BuildValue("O", output_array);
+    PyObject *ret = Py_BuildValue("d", 0.0);
     return ret;
 }
 

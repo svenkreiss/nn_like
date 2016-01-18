@@ -1,4 +1,8 @@
 void nn_like(int _layers, int* _layer_units);
+
+void random_weights(void);
+void fixed_weights(double weight, double variance);
+
 void print_states(void);
 void print_connections(void);
 
