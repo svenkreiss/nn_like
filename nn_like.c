@@ -34,12 +34,16 @@ void nn_like(int _n_layers, int* _layer_units) {
     for (int l=0; l < n_layers; l++) {
         states[l] = (double*)malloc((layer_units[l]+1) * sizeof(double));
         deltas[l] = (double*)malloc(layer_units[l] * sizeof(double));
-        for (int i=0; i < layer_units[l]; i++) deltas[l][i] = 0.0;
+        for (int i=0; i < layer_units[l]; i++) {
+            states[l][i] = 0.0;
+            deltas[l][i] = 0.0;
+        }
+        states[l][layer_units[l]] = 1.0;  // bias
     }
     for (int l=0; l < n_layers-1; l++) {
-        weights[l] = (double**)malloc(layer_units[l] * sizeof(double*));
-        vars[l] = (double**)malloc(layer_units[l] * sizeof(double*));
-        for (int r=0; r < layer_units[l]; r++) {
+        weights[l] = (double**)malloc((layer_units[l]+1) * sizeof(double*));
+        vars[l] = (double**)malloc((layer_units[l]+1) * sizeof(double*));
+        for (int r=0; r < (layer_units[l]+1); r++) {
             weights[l][r] = (double*)malloc(layer_units[l+1] * sizeof(double));
             vars[l][r] = (double*)malloc(layer_units[l+1] * sizeof(double));
         }
@@ -50,7 +54,7 @@ void nn_like(int _n_layers, int* _layer_units) {
 
 void random_weights(void) {
     for (int l=0; l < n_layers-1; l++) {
-        for (int r=0; r < layer_units[l]; r++) {
+        for (int r=0; r < (layer_units[l]+1); r++) {
             for (int c=0; c < layer_units[l+1]; c++) {
                 weights[l][r][c] = -0.4 + 0.8*((double)rand()/RAND_MAX);
                 vars[l][r][c] = 1.0;
@@ -61,7 +65,7 @@ void random_weights(void) {
 
 void fixed_weights(double weight, double variance) {
     for (int l=0; l < n_layers-1; l++) {
-        for (int r=0; r < layer_units[l]; r++) {
+        for (int r=0; r < (layer_units[l]+1); r++) {
             for (int c=0; c < layer_units[l+1]; c++) {
                 weights[l][r][c] = weight;
                 vars[l][r][c] = variance;
