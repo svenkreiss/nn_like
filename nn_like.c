@@ -180,6 +180,12 @@ void forward(double* input, double* output) {
             }
             states[l+1][uo] = (*f)(states[l+1][uo]);
         }
+
+        // update sum of states squared
+        states2_sum[l+1] = 0.0;
+        for (int uo=0; uo < layer_units[l+1]; uo++) {
+            states2_sum[l+1] += states[l+1][uo]*states[l+1][uo];
+        }
     }
 
     // return output
@@ -228,19 +234,21 @@ int output_size(void) {
 
 
 void print_states(void) {
-    for (int n=0; n < n_layers; n++) {
-        for (int u=0; u < layer_units[n]; u++) {
-            printf("%.2f(%.4f) ", states[n][u], deltas[n][u]);
+    for (int l=0; l < n_layers; l++) {
+        printf("States(deltas) layer %i: ", l);
+        for (int u=0; u < layer_units[l]; u++) {
+            printf("%.2f(%.4f) ", states[l][u], deltas[l][u]);
         }
         printf("\n");
     }
 }
 
 void print_connections(void) {
-    for (int n=0; n < n_layers-1; n++) {
-        for (int ui=0; ui < layer_units[n]; ui++) {
-            for (int uo=0; uo < layer_units[n+1]; uo++) {
-                printf("%.2f+/-%.2f ", weights[n][ui][uo], sqrt(vars[n][ui][uo]));
+    for (int l=0; l < n_layers-1; l++) {
+        printf("Weights layer %i:\n", l);
+        for (int ui=0; ui < layer_units[l]; ui++) {
+            for (int uo=0; uo < layer_units[l+1]; uo++) {
+                printf("%.2f+/-%.2f ", weights[l][ui][uo], sqrt(vars[l][ui][uo]));
             }
             printf("\n");
         }
