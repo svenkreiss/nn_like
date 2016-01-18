@@ -87,7 +87,6 @@ double relu(double i) {
 double logistic_function(double i) {
     return 1.0 / (1.0 + exp(-i));
 }
-
 double logistic_function_prime(double o) {
     return o * (1.0-o);
 }
@@ -308,6 +307,7 @@ void print_states(void) {
         printf("\n");
     }
 }
+
 
 void print_connections(void) {
     for (int l=0; l < n_layers-1; l++) {
