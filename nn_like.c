@@ -9,7 +9,6 @@ int include_bias = 1;
 int n_layers;
 int* layer_units;
 double** states;
-double* states2_sum;
 double** deltas;
 double*** weights;
 double*** vars;
@@ -27,7 +26,6 @@ void nn_like(int _n_layers, int* _layer_units) {
     // reserve memory
     layer_units = (int*)malloc(n_layers * sizeof(int));
     states = (double**)malloc(n_layers * sizeof(double*));
-    states2_sum = (double*)malloc(n_layers * sizeof(double));
     deltas = (double**)malloc(n_layers * sizeof(double*));
     weights = (double***)malloc((n_layers-1) * sizeof(double**));
     vars = (double***)malloc((n_layers-1) * sizeof(double**));
@@ -140,10 +138,6 @@ double (*f_backprop)(double, double) = &tanh_backprop; // backprop
 void forward_deterministic(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
-    states2_sum[0] = 0.0;
-    for (int i=0; i < layer_units[0]; i++) {
-        states2_sum[0] += states[0][i]*states[0][i];
-    }
 
     // process layers
     for (int l=0; l < n_layers-1; l++) {
@@ -153,12 +147,6 @@ void forward_deterministic(double* input, double* output) {
                 states[l+1][o] += states[l][i] * weights[l][i][o];
             }
             states[l+1][o] = (*f)(states[l+1][o]);
-        }
-
-        // update sum of states squared
-        states2_sum[l+1] = 0.0;
-        for (int o=0; o < layer_units[l+1]; o++) {
-            states2_sum[l+1] += states[l+1][o]*states[l+1][o];
         }
     }
 
@@ -170,10 +158,6 @@ void forward_deterministic(double* input, double* output) {
 void forward(double* input, double* output) {
     // copy input to initial state
     memcpy(states[0], input, sizeof(double)*layer_units[0]);
-    states2_sum[0] = 0.0;
-    for (int i=0; i < layer_units[0]; i++) {
-        states2_sum[0] += states[0][i]*states[0][i];
-    }
 
     // process layers
     for (int l=0; l < n_layers-1; l++) {
@@ -188,12 +172,6 @@ void forward(double* input, double* output) {
                 states[l+1][o] += states[l][i] * w_obs;
             }
             states[l+1][o] = (*f)(states[l+1][o]);
-        }
-
-        // update sum of states squared
-        states2_sum[l+1] = 0.0;
-        for (int o=0; o < layer_units[l+1]; o++) {
-            states2_sum[l+1] += states[l+1][o]*states[l+1][o];
         }
     }
 
@@ -289,10 +267,14 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
     // printf("update layer %i\n", l);
         // [non-traditional] weight update proportional to the square of
         // the input state.
+        double s2_sum = 0.0;
+        for (int i=0; i < layer_units[l]; i++) {
+            s2_sum += states[l][i]*states[l][i];
+        }
 
         for (int i=0; i < layer_units[l]; i++) {
             for (int o=0; o < layer_units[l+1]; o++) {
-                weights[l][i][o] += eta * deltas[l+1][o] * states[l][i] / states2_sum[l];
+                weights[l][i][o] += eta * deltas[l+1][o] * states[l][i] / s2_sum;
             }
         }
     // }
