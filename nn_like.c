@@ -59,8 +59,9 @@ void nn_like(int _n_layers, int* _layer_units) {
 void random_weights(void) {
     for (int l=0; l < n_layers-1; l++) {
         for (int i=0; i < (layer_units[l]+1); i++) {
+            double sigma = 1.0 / sqrt(layer_units[l]+include_bias);
             for (int o=0; o < layer_units[l+1]; o++) {
-                weights[l][i][o] = -0.4 + 0.8*((double)rand()/RAND_MAX);
+                weights[l][i][o] = -sigma/2.0 + sigma*((double)rand()/RAND_MAX);
                 vars[l][i][o] = 1.0;
             }
         }
@@ -116,7 +117,7 @@ double tanh_inverse(double i) {
     return atanh(i);
 }
 double tanh_backprop(double t, double o) {
-    if (t >= 0.999) t = 0.999;
+    if (t > 0.999) t = 0.999;
     if (t < -0.999) t = -0.999;
     if (o > 0.999) o = 0.999;
     if (o < -0.999) o = -0.999;
@@ -245,7 +246,7 @@ void backprop_deterministic(double* output, double* target_output, double eta) {
                 }
 
                 // if (w2_sum == 0.0) continue;
-                // if (weights[l][i][o]/w2_sum > 1000.0) continue;
+                // if (weights[l][i][o]/w2_sum > 10.0) continue;
 
                 // [non-traditional] backprop deltas weighted by the
                 // normalized weight squared.
@@ -300,7 +301,7 @@ void print_states(void) {
 void print_connections(void) {
     for (int l=0; l < n_layers-1; l++) {
         printf("Weights layer %i:\n", l);
-        for (int i=0; i < layer_units[l]; i++) {
+        for (int i=0; i < layer_units[l]+include_bias; i++) {
             for (int o=0; o < layer_units[l+1]; o++) {
                 printf("%.2f+/-%.2f ", weights[l][i][o], sqrt(vars[l][i][o]));
             }
