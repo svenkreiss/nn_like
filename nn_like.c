@@ -58,10 +58,10 @@ void nn_like(int _n_layers, int* _layer_units) {
 
 void random_weights(void) {
     for (int l=0; l < n_layers-1; l++) {
+        double sigma = sqrt(6) / sqrt(layer_units[l] + layer_units[l+1] + include_bias);
         for (int i=0; i < (layer_units[l]+1); i++) {
-            double sigma = 1.0 / sqrt(layer_units[l]+include_bias);
             for (int o=0; o < layer_units[l+1]; o++) {
-                weights[l][i][o] = -sigma/2.0 + sigma*((double)rand()/RAND_MAX);
+                weights[l][i][o] = -sigma + 2.0*sigma*((double)rand()/RAND_MAX);
                 vars[l][i][o] = 1.0;
             }
         }
