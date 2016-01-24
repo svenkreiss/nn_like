@@ -2,5 +2,5 @@ Install
 =======
 
 ```
-python setup.py build_ext --inplace
+rm -r build/ && python setup.py build_ext --inplace
 ```
